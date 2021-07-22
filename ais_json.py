@@ -8,7 +8,7 @@ import datetime
 import requests
 
 IP = '127.0.0.1'
-PORT = 5000
+PORT = 6710
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((IP, PORT))
@@ -42,9 +42,9 @@ while True:
     if 'part_num' in parsed:
       ais['partno'] = parsed['part_num']
     if 'callsign' in parsed:
-      ais['callsign'] = parsed['callsign']
+      ais['callsign'] = parsed['callsign'].replace("@"," ")
     if 'name' in parsed:
-      ais['shipname'] = parsed['name']
+      ais['shipname'] = parsed['name'].replace("@"," ")
     if 'vendor_id' in parsed:
       ais['vendorid'] = parsed['vendor_id']
     if 'dim_a' in parsed:
@@ -58,7 +58,7 @@ while True:
     if 'width' in parsed:
       ais['width'] = parsed['width']
     if 'destination' in parsed:
-      ais['destination'] = parsed['destination']
+      ais['destination'] = parsed['destination'].replace("@"," ")
     if 'persons' in parsed:
       ais['persons_on_board'] = parsed['persons']
 
@@ -81,10 +81,10 @@ while True:
       r = requests.post(URL, files={'jsonais': (None, post)})
       #dump non common packets for debugging
       if parsed['id'] not in (1,2,3,4):
-        print '---'
-        print 'NMEA:', parsed['nmea']
-        print 'Parsed:', parsed
-        print 'Post:', post
-        print 'Result:', json.loads(r.text)['description']
+        print ('----')
+        print ('NMEA:', parsed['nmea'])
+        print ('Parsed:', parsed)
+        print ('Post:', post)
+        print ('Result:', json.loads(r.text)['description'])
     except requests.exceptions.RequestException as e:
-      print e
+      print (e)
