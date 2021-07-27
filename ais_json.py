@@ -8,83 +8,76 @@ import datetime
 import requests
 
 IP = '127.0.0.1'
-PORT = 5000
+PORT = 8004
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((IP, PORT))
 
 while True:
-
+  i = 1
+  mmsilist = []
+  aistype  = []
+  
   for msg in ais.stream.decode(sock.makefile('r'),keep_nmea=True):
     rxtime =  datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S") #YYYYMMDDHHMMSS
     parsed = json.loads(json.dumps(msg))
     
-    ais = {
+    rxais = {
             'msgtype': parsed['id'],
             'mmsi': parsed['mmsi'],
             'rxtime': rxtime
             }
 
     if 'x' in parsed:
-      ais['lon'] = parsed['x']
+      rxais['lon'] = parsed['x']
     if 'y' in parsed:
-      ais['lat'] = parsed['y']
+      rxais['lat'] = parsed['y']
     if 'sog' in parsed:
-      ais['speed'] = parsed['sog']
+      rxais['speed'] = parsed['sog']
     if 'cog' in parsed:
-      ais['course'] = parsed['cog']
+      rxais['course'] = parsed['cog']
     if 'true_heading' in parsed:
-      ais['heading'] = parsed['true_heading']
+      rxais['heading'] = parsed['true_heading']
     if 'nav_status' in parsed:
-      ais['status'] = parsed['nav_status']
+      rxais['status'] = parsed['nav_status']
     if 'type_and_cargo' in parsed:
-      ais['shiptype'] = parsed['type_and_cargo']
+      rxais['shiptype'] = parsed['type_and_cargo']
     if 'part_num' in parsed:
-      ais['partno'] = parsed['part_num']
+      rxais['partno'] = parsed['part_num']
     if 'callsign' in parsed:
-      ais['callsign'] = parsed['callsign']
+      rxais['callsign'] = parsed['callsign']
     if 'name' in parsed:
-      ais['shipname'] = parsed['name']
+      rxais['shipname'] = parsed['name']
     if 'vendor_id' in parsed:
-      ais['vendorid'] = parsed['vendor_id']
+      rxais['vendorid'] = parsed['vendor_id']
     if 'dim_a' in parsed:
-      ais['ref_front'] = parsed['dim_a']
+      rxais['ref_front'] = parsed['dim_a']
     if 'dim_c' in parsed:
-      ais['ref_left'] = parsed['dim_c']
+      rxais['ref_left'] = parsed['dim_c']
     if 'draught' in parsed:
-      ais['draught'] = parsed['draught']
+      rxais['draught'] = parsed['draught']
     if 'length' in parsed:
-      ais['length'] = parsed['length']
+      rxais['length'] = parsed['length']
     if 'width' in parsed:
-      ais['width'] = parsed['width']
+      rxais['width'] = parsed['width']
     if 'destination' in parsed:
-      ais['destination'] = parsed['destination']
+      rxais['destination'] = parsed['destination']
     if 'persons' in parsed:
-      ais['persons_on_board'] = parsed['persons']
+      rxais['persons_on_board'] = parsed['persons']
 
-    path = { 
-            "name": NAME, 
-            "url": URL }
+    if i == 1:
+     mmsilist.append(rxais['mmsi'])
+     aistype.append(rxais['msgtype'])
+    else: 
+     if ((rxais['mmsi'] in mmsilist) and (rxais['msgtype'] in aistype)):
+      print('dupe', rxais['msgtype'], rxais['mmsi'] )
+     else:
+      mmsilist.append(rxais['mmsi'])
+      aistype.append(rxais['msgtype'])
+      print(rxais)
+     
+    i += 1
+    if i > 10:
+     break
 
-    groups = { 
-            "path": [path], 
-            "msgs":[ais] }
-    
-    output = {
-            "encodetime": rxtime,
-            "protocol": 'jsonais',
-            "groups":  [groups]
-            }
-    
-    post = json.dumps(output)
-    try:
-      r = requests.post(URL, files={'jsonais': (None, post)})
-      #dump non common packets for debugging
-      if parsed['id'] not in (1,2,3,4):
-        print '---'
-        print 'NMEA:', parsed['nmea']
-        print 'Parsed:', parsed
-        print 'Post:', post
-        print 'Result:', json.loads(r.text)['description']
-    except requests.exceptions.RequestException as e:
-      print e
+  exit()
