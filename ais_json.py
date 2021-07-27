@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+ 
 from settings import URL, NAME
 import json
 import ais.stream
