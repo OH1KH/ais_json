@@ -1,23 +1,20 @@
 #!/usr/bin/python
 
-from settings import URL, NAME
+from settings import IP, PORT, URL, NAME, HOST, USER, PASS
 import json
 import ais.stream
 import socket
 import datetime
 import requests
+import mysql.connector
 
-IP = '127.0.0.1'
-PORT = 8004
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((IP, PORT))
 
 while True:
   i = 1
-  mmsilist = []
-  aistype  = []
-  
+ 
   for msg in ais.stream.decode(sock.makefile('r'),keep_nmea=True):
     rxtime =  datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S") #YYYYMMDDHHMMSS
     parsed = json.loads(json.dumps(msg))
@@ -65,19 +62,9 @@ while True:
     if 'persons' in parsed:
       rxais['persons_on_board'] = parsed['persons']
 
-    if i == 1:
-     mmsilist.append(rxais['mmsi'])
-     aistype.append(rxais['msgtype'])
-    else: 
-     if ((rxais['mmsi'] in mmsilist) and (rxais['msgtype'] in aistype)):
-      print('dupe', rxais['msgtype'], rxais['mmsi'] )
-     else:
-      mmsilist.append(rxais['mmsi'])
-      aistype.append(rxais['msgtype'])
-      print(rxais)
-     
+    print (rxais)     
     i += 1
-    if i > 10:
+    if i > 4:
      break
 
   exit()
