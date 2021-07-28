@@ -62,7 +62,6 @@ while True:
     if 'persons' in parsed:
       rxais['persons_on_board'] = parsed['persons']
 
-    print (rxais)     
     i += 1
     if i > 4:
      break
