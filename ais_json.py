@@ -18,7 +18,8 @@ while True:
  i = 1
  u = int(datetime.datetime.utcnow().timestamp())
  mmsilist = []
-
+ msgtypelist = []
+ 
  for msg in ais.stream.decode(sock.makefile('r'),keep_nmea=True):
    parsed = json.loads(json.dumps(msg))
    rxtime =  datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S") #YYYYMMDDHHMMSS
@@ -82,15 +83,17 @@ while True:
 		  "groups":[grp]
 		}
     mmsilist.append(rxais['mmsi'])
+    msgtypelist.append(rxais['msgtype'])
    else:
-     if (rxais['mmsi'] in mmsilist):
-      print('dupe',rxais['mmsi'])
+     if ((rxais['mmsi'] in mmsilist) and (rxais['msgtype'] in msgtypelist)):
+      print('dupe:',rxais['mmsi'],rxais['msgtype'])
      else:
       aisgroup["groups"] += [grp]
       mmsilist.append(rxais['mmsi'])
-     
+      msgtypelist.append(rxais['msgtype'])
+
    i += 1
-   if ( int(datetime.datetime.utcnow().timestamp()) - u) > 30:
+   if ( int(datetime.datetime.utcnow().timestamp()) - u) > 60:
 	    break
 
  rxtime =  datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S") #YYYYMMDDHHMMSS
